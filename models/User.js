@@ -1,39 +1,33 @@
-const { Model, DataTypes } = require('sequelize');
+const { Schema, model } = require('mongoose');
+const thoughtSchema = require('./Thought');
 
-const sequelize = require('../config/connection');
-
-class ProductTag extends Model {}
-
-ProductTag.init(
+// Schema to create Student model
+const userSchema = new Schema(
   {
-    id: {
-      type: DataTypes.INTEGER,
-      allowNull: false,
-      primaryKey: true,
-      autoIncrement: true,
+    first: {
+      type: String,
+      required: true,
+      max_length: 50,
     },
-    product_id: {
-      type: DataTypes.INTEGER,
-      references: {
-        model: 'reaction',
-        key: 'id',
-      },
+    last: {
+      type: String,
+      required: true,
+      max_length: 50,
     },
-    tag_id: {
-      type: DataTypes.INTEGER,
-      references: {
-        model: 'user',
-        key: 'id',
-      },
+    github: {
+      type: String,
+      required: true,
+      max_length: 50,
     },
+    thought: [thoughtSchema],
   },
   {
-    sequelize,
-    timestamps: false,
-    freezeTableName: true,
-    underscored: true,
-    modelName: 'user',
+    toJSON: {
+      getters: true,
+    },
   }
 );
 
-module.exports = ProductTag;
+const User = model('user', userSchema);
+
+module.exports = User;

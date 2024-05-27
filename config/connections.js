@@ -1,15 +1,7 @@
-require('dotenv').config();
+const { connect, connection } = require('mongoose');
 
-const Sequelize = require('sequelize');
+const connectionString = 'mongodb://127.0.0.1:27017/studentsDB';
 
-const sequelize = process.env.DB_URL
-  ? new Sequelize(process.env.DB_URL)
-  : new Sequelize(process.env.DB_NAME, process.env.DB_USER, process.env.DB_PASSWORD, {
-      host: 'localhost',
-      dialect: 'postgres',
-      dialectOptions: {
-        decimalNumbers: true,
-      },
-    });
+connect(connectionString);
 
-module.exports = sequelize;
+module.exports = connection;

@@ -1,55 +1,38 @@
-// import important parts of sequelize library
-const { Model, DataTypes } = require('sequelize');
-// import our database connection from config.js
-const sequelize = require('../config/connection');
+const { Schema, model } = require('mongoose');
 
-// Initialize Product model (table) by extending off Sequelize's Model class
-class Product extends Model {}
-
-// set up fields and rules for Product model
-Product.init(
+const thoughtSchema = new Schema(
   {
- id: {
-      type: DataTypes.INTEGER,
-      allowNull: false,
-      primaryKey: true,
-      autoIncrement: true,
+    courseName: {
+      type: String,
+      required: true,
     },
-    product_name: {
-      type: DataTypes.STRING,
-      allowNull: false,
+    inPerson: {
+      type: Boolean,
+      default: true,
     },
-    price: {
-      type: DataTypes.DECIMAL(10, 2),
-      allowNull: false,
-      validate: {
-        isDecimal: true,
+    startDate: {
+      type: Date,
+      default: Date.now(),
+    },
+    endDate: {
+      type: Date,
+      default: () => new Date(+new Date() + 84 * 24 * 60 * 60 * 1000),
+    },
+    students: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: 'user',
       },
-    },
-    stock: {
-      type: DataTypes.INTEGER,
-      allowNull: false,
-      defaultValue: 10,
-      validate: {
-        isNumeric: true,
-      },
-    },
-    category_id: {
-      type: DataTypes.INTEGER,
-      allowNull: true,
-      references: {
-        model: 'reaction',
-        key: 'id',
-      },
-    },
+    ],
   },
   {
-    sequelize,
-    timestamps: false,
-    freezeTableName: true,
-    underscored: true,
-    modelName: 'thought',
+    toJSON: {
+      virtuals: true,
+    },
+    id: false,
   }
 );
 
-module.exports = Product;
+const Course = model('thought', thoughtSchema);
+
+module.exports = Course;
