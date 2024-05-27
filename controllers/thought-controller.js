@@ -1,70 +1,70 @@
-const { Course, User } = require('../models');
+const { thought, User } = require('../models');
 
 module.exports = {
-    // Get all courses
-    async getCourses(req, res) {
+    // Get all thoughts
+    async getThoughts(req, res) {
         try {
-            const courses = await Course.find()
+            const thoughts = await thought.find()
                 .populate('user');
-            res.json(courses);
+            res.json(thoughts);
         } catch (err) {
             res.status(500).json(err);
         }
     },
-    // Get a course
-    async getSingleCourse(req, res) {
+    // Get a thought
+    async getSingleThought(req, res) {
         try {
-            const course = await Course.findOne({ _id: req.params.courseId })
+            const thought = await thought.findOne({ _id: req.params.thoughtId })
                 .populate('user');
 
-            if (!course) {
-                return res.status(404).json({ message: 'No course with that ID' });
+            if (!thought) {
+                return res.status(404).json({ message: 'No thought with that ID' });
             }
 
-            res.json(course);
+            res.json(thought);
         } catch (err) {
             res.status(500).json(err);
         }
     },
-    // Create a course
-    async createCourse(req, res) {
+    // Create a thought
+    async createThought(req, res) {
         try {
-            const course = await Course.create(req.body);
-            res.json(course);
+            const thought = await thought.create(req.body);
+            res.json(thought);
         } catch (err) {
             console.log(err);
             return res.status(500).json(err);
         }
     },
-    // Delete a course
-    async deleteCourse(req, res) {
+    // Delete a thought
+    async deleteThought(req, res) {
         try {
-            const course = await Course.findOneAndDelete({ _id: req.params.courseId });
+            const thought = await thought.findOneAndDelete({ _id: req.params.thoughtId });
 
-            if (!course) {
-                return res.status(404).json({ message: 'No course with that ID' });
+            if (!thought) {
+                return res.status(404).json({ message: 'No thought with that ID' });
             }
 
-            await User.deleteMany({ _id: { $in: course.user } });
-            res.json({ message: 'Course and user deleted!' });
+            await User.deleteMany({ _id: { $in: thought.user } });
+            res.json({ message: 'thought and user deleted!' });
         } catch (err) {
             res.status(500).json(err);
         }
     },
-    // Update a course
-    async updateCourse(req, res) {
+    // Update a thought
+    async updateThought(req, res) {
         try {
-            const course = await Course.findOneAndUpdate(
-                { _id: req.params.courseId },
+            const thought = await thought.findOneAndUpdate(
+                { _id: req.params.thoughtId },
                 { $set: req.body },
                 { runValidators: true, new: true }
             );
 
-            if (!course) {
-                return res.status(404).json({ message: 'No course with this id!' });
+            if (!thought) {
+                return res.status(404).json({ message: 'No thought with this id!' });
             }
 
-            res.json(course);
+            res.json(thought);
         } catch (err) {
             res.status(500).json(err);
         }
