@@ -1,8 +1,7 @@
 // import models
-const Product = require('./Reaction');
-const Category = require('./Thought');
+const Thought = require('./Thought');
+const User = require('./User');
 
 
 
-module.exports = {
-  Reaction, Thought, User, };
+module.exports = {Thought, User, };

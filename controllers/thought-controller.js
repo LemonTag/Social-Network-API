@@ -1,10 +1,10 @@
-const { thought, User } = require('../models');
+const { Thought, User } = require('../models');
 
 module.exports = {
     // Get all thoughts
     async getThoughts(req, res) {
         try {
-            const thoughts = await thought.find()
+            const thoughts = await Thought.find()
                 .populate('user');
             res.json(thoughts);
         } catch (err) {
@@ -14,7 +14,7 @@ module.exports = {
     // Get a thought
     async getSingleThought(req, res) {
         try {
-            const thought = await thought.findOne({ _id: req.params.thoughtId })
+            const thought = await Thought.findOne({ _id: req.params.thoughtId })
                 .populate('user');
 
             if (!thought) {
@@ -29,7 +29,7 @@ module.exports = {
     // Create a thought
     async createThought(req, res) {
         try {
-            const thought = await thought.create(req.body);
+            const thought = await Thought.create(req.body);
             res.json(thought);
         } catch (err) {
             console.log(err);
@@ -39,7 +39,7 @@ module.exports = {
     // Delete a thought
     async deleteThought(req, res) {
         try {
-            const thought = await thought.findOneAndDelete({ _id: req.params.thoughtId });
+            const thought = await Thought.findOneAndDelete({ _id: req.params.thoughtId });
 
             if (!thought) {
                 return res.status(404).json({ message: 'No thought with that ID' });
@@ -54,7 +54,7 @@ module.exports = {
     // Update a thought
     async updateThought(req, res) {
         try {
-            const thought = await thought.findOneAndUpdate(
+            const thought = await Thought.findOneAndUpdate(
                 { _id: req.params.thoughtId },
                 { $set: req.body },
                 { runValidators: true, new: true }

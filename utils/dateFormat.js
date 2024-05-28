@@ -1,185 +1,56 @@
-const router = require('express').Router();
-const { User } = require('../../models');
-const bcrypt = require('bcrypt'); // To hash passwords
-const { Op } = require('sequelize');
-const formatDate = require('../../utils/dateFormat'); // Import the date formatting utility
-
-// Register a new user
-router.post('/register', async (req, res) => {
-  try {
-    // Hash the user's password before saving it to the database
-    const hashedPassword = await bcrypt.hash(req.body.password, 10);
-    
-    // Create a new user in the database with the provided username, email, and hashed password
-    const newUser = await User.create({
-      username: req.body.username,
-      email: req.body.email,
-      password: hashedPassword,
-      createdAt: formatDate(new Date()), // Format and add the creation date
-    });
-
-    // Save the user's session
-    req.session.save(() => {
-      req.session.loggedIn = true;
-      req.session.user_id = newUser.id;
-      req.session.username = newUser.username;
-
-      // Send back the newly created user data
-      res.status(201).json(newUser);
-    });
-  } catch (error) {
-    console.error(error); 
-    res.status(500).json(error);
-  }
-});
-
-// Login a user
-router.post('/login', async (req, res) => {
-  try {
-    // Find the user in the database by email
-    const user = await User.findOne({
-      where: {
-        email: req.body.email,
-      },
-    });
-
-    // If the user is not found, send a 400 status code with a message
-    if (!user) {
-      res.status(400).json({ message: 'No user found with this email address!' });
-      return;
-    }
-
-    // Compare the provided password with the hashed password in the database
-    const validPassword = await bcrypt.compare(req.body.password, user.password);
-
-    // If the password is invalid, send a 400 status code with a message
-    if (!validPassword) {
-      res.status(400).json({ message: 'Incorrect password!' });
-      return;
-    }
-
-    // Save the user's session
-    req.session.save(() => {
-      req.session.loggedIn = true;
-      req.session.user_id = user.id;
-      req.session.username = user.username;
-
-      // Send back the user data and a success message
-      res.status(200).json({ user: user, message: 'You are now logged in!' });
-    });
-  } catch (error) {
-    console.error(error); 
-    res.status(500).json(error);
-  }
-});
-
-// Logout a user
-router.post('/logout', (req, res) => {
-  // If the user is logged in, destroy the session
-  if (req.session.loggedIn) {
-    req.session.destroy(() => {
-      res.status(204).end(); 
-    });
+const addDateSuffix = (date) => {
+  let dateStr = date.toString();
+  // get last char of date string
+  const lastChar = dateStr.charAt(dateStr.length - 1);
+  if (lastChar === '1' && dateStr !== '11') {
+    dateStr = `${dateStr}st`;
+  } else if (lastChar === '2' && dateStr !== '12') {
+    dateStr = `${dateStr}nd`;
+  } else if (lastChar === '3' && dateStr !== '13') {
+    dateStr = `${dateStr}rd`;
   } else {
-    res.status(404).end();
+    dateStr = `${dateStr}th`;
   }
-});
+  return dateStr;
+};
+// function to format a timestamp, accepts the timestamp and an `options` object as parameters
+module.exports = (
+  timestamp,
+  { monthLength = 'short', dateSuffix = true } = {}
+) => {
+  const months = {
+    0: monthLength === 'short' ? 'Jan' : 'January',
+    1: monthLength === 'short' ? 'Feb' : 'February',
+    2: monthLength === 'short' ? 'Mar' : 'March',
+    3: monthLength === 'short' ? 'Apr' : 'April',
+    4: monthLength === 'short' ? 'May' : 'May',
+    5: monthLength === 'short' ? 'Jun' : 'June',
+    6: monthLength === 'short' ? 'Jul' : 'July',
+    7: monthLength === 'short' ? 'Aug' : 'August',
+    8: monthLength === 'short' ? 'Sep' : 'September',
+    9: monthLength === 'short' ? 'Oct' : 'October',
+    10: monthLength === 'short' ? 'Nov' : 'November',
+    11: monthLength === 'short' ? 'Dec' : 'December',
+  };
+  const dateObj = new Date(timestamp);
+  const formattedMonth = months[dateObj.getMonth()];
 
-// Get user profile by ID
-router.get('/:id', async (req, res) => {
-  try {
-    // Find the user in the database by ID, excluding the password field
-    const user = await User.findOne({
-      where: {
-        id: req.params.id,
-      },
-      attributes: { exclude: ['password'] },
-    });
-
-    // If the user is not found, send a 404 status code with a message
-    if (!user) {
-      res.status(404).json({ message: 'No user found with this id!' });
-      return;
-    }
-
-    // Format the user's creation date before sending the response
-    const formattedUser = {
-      ...user.toJSON(),
-      createdAt: formatDate(user.createdAt),
-      updatedAt: formatDate(user.updatedAt),
-    };
-
-    // Send back the user data
-    res.status(200).json(formattedUser);
-  } catch (error) {
-    console.error(error); 
-    res.status(500).json(error);
+  const dayOfMonth = dateSuffix
+    ? addDateSuffix(dateObj.getDate())
+    : dateObj.getDate();
+  const year = dateObj.getFullYear();
+  let hour =
+    dateObj.getHours() > 12
+      ? Math.floor(dateObj.getHours() - 12)
+      : dateObj.getHours();
+  // if hour is 0 (12:00am), change it to 12
+  if (hour === 0) {
+    hour = 12;
   }
-});
 
-// Update user profile by ID
-router.put('/:id', async (req, res) => {
-  try {
-    const updatedData = req.body;
-
-    // If a new password is provided, hash it before saving
-    if (req.body.password) {
-      updatedData.password = await bcrypt.hash(req.body.password, 10);
-    }
-
-    // Update the user data in the database by ID
-    const [updated] = await User.update(updatedData, {
-      where: {
-        id: req.params.id,
-      },
-    });
-
-    // If no rows were updated, send a 404 status code with a message
-    if (!updated) {
-      res.status(404).json({ message: 'No user found with this id!' });
-      return;
-    }
-
-    // Find the updated user data and exclude the password field
-    const updatedUser = await User.findOne({ where: { id: req.params.id }, attributes: { exclude: ['password'] } });
-
-    // Format the updated user's dates before sending the response
-    const formattedUser = {
-      ...updatedUser.toJSON(),
-      createdAt: formatDate(updatedUser.createdAt),
-      updatedAt: formatDate(updatedUser.updatedAt),
-    };
-
-    // Send back the updated user data
-    res.status(200).json(formattedUser);
-  } catch (error) {
-    console.error(error); 
-    res.status(500).json(error);
-  }
-});
-
-// Delete user by ID
-router.delete('/:id', async (req, res) => {
-  try {
-    // Delete the user from the database by ID
-    const deleted = await User.destroy({
-      where: {
-        id: req.params.id,
-      },
-    });
-
-    // If no rows were deleted, send a 404 status code with a message
-    if (!deleted) {
-      res.status(404).json({ message: 'No user found with this id!' });
-      return;
-    }
-
-    // Send back the number of rows affected
-    res.status(200).json(deleted);
-  } catch (error) {
-    console.error(error); 
-    res.status(500).json(error);
-  }
-});
-
-module.exports = router;
+  const minutes = (dateObj.getMinutes() < 10 ? '0' : '') + dateObj.getMinutes();
+  // set `am` or `pm`
+  const periodOfDay = dateObj.getHours() >= 12 ? 'pm' : 'am';
+  const formattedTimeStamp = `${formattedMonth} ${dayOfMonth}, ${year} at ${hour}:${minutes} ${periodOfDay}`;
+  return formattedTimeStamp;
+};

@@ -1,29 +1,34 @@
-const { Model, DataTypes } = require('mongoose');
+const {Schema, Types } = require('mongoose')
+const dateFormat = require('../utils/dateFormat')
 
-const sequelize = require('../config/connection.js');
-
-class Category extends Model {}
-
-Category.init(
+const reactionSchema = new Schema(
   {
-    id: {
-      type: DataTypes.INTEGER,
-      allowNull: false,
-      primaryKey: true,
-      autoIncrement: true,
+    reactionId: {
+      type: Schema.Types.ObjectId,
+      default: () => new Types.ObjectId()
     },
-    category_name: {
-      type: DataTypes.STRING,
-      allowNull: false,
+    reactionBody: {
+      type: String,
+      required: true,
+      maxlength: 280
     },
+    username: {
+      type: String,
+      required: true
+    },
+    createdAt: {
+      type: Date,
+      default: Date.now,
+      get: timestamp => dateFormat(timestamp)
+    }
   },
   {
-    sequelize,
-    timestamps: false,
-    freezeTableName: true,
-    underscored: true,
-    modelName: 'reaction',
+    toJSON:{
+      getters: true
+    },
+    id: false 
   }
-);
+)
 
-module.exports = Category;
+
+module.exports = reactionSchema;

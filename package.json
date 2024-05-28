@@ -1,0 +1,29 @@
+{
+  "name": "social-network-api",
+  "version": "1.0.0",
+  "lockfileVersion": 3,
+  "requires": true,
+  "description": "Mongoose back-end project - Main",
+  "license": "MIT",
+  "main": "server.js",
+  "packages": {
+    "": {
+      "name": "social-network-api",
+      "version": "1.0.0",
+      "license": "ISC"
+    }
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.22"
+  },
+  "scripts": {
+    "dev": "nodemon server",
+    "seed": "node utils/seed",
+    "start": "node server"
+  },
+  "dependencies": {
+    "express": "^4.19.2",
+    "mogoose": "^0.0.1-security",
+    "mongoose": "^8.4.0"
+  }
+}
