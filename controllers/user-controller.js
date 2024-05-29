@@ -77,8 +77,8 @@ const deleteUser = async (req, res) => {
 // Add a friend to a user
   addFriend = async (req, res) => {
   try {
-    const { userId } = req.params;
-    const { friendId } = req.body;
+    const userId = req.params.userId;
+    const friendId = req.params.friendId;
 
     // Check if the user and friend exist
     const user = await User.findById(userId);
