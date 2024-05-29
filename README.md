@@ -25,6 +25,8 @@ I opened git labs and made a git clone of the challenges I had to complete into 
 After that, I went into my git hub, created repositories for my Web-API, and connected them with my challenges folder using git bash. I also created my assets folder there.
 Then, I open the folder using Visual Studio code to make my index.html and style.css, and Javascript to use my project.
 https://github.com/LemonTag/Social-Network-API
+<img width="1918" alt="image" src="https://github.com/LemonTag/Social-Network-API/assets/50891761/8db5cfba-fdb2-4523-aa19-75f67adc8331">
+
 
 
 
